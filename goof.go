@@ -3,7 +3,7 @@ package main
 import (
 	"path/filepath"
 	"runtime"
-	"code.google.com/p/goncurses"
+	gc "code.google.com/p/goncurses"
 	"strings"
 	"github.com/jessevdk/go-flags"
 	"os"
@@ -43,9 +43,9 @@ var listener net.Listener
 var running bool
 var currentSpeed int64
 
-var stdscr goncurses.Window
+var stdscr gc.Window
 
-var win goncurses.Window
+var win gc.Window
 var rows, cols int
 
 var frame int
@@ -121,7 +121,7 @@ func main() {
 	wg.Add(1)
 	
 	// init ncurses and end it, if main returns
-	stdscr, err = goncurses.Init()
+    _, err = gc.Init()
 	
 	// handle ctrl+c
 	c := make(chan os.Signal, 1)
@@ -146,7 +146,7 @@ func main() {
 	
 	wg.Wait()
 	
-	goncurses.End()
+	gc.End()
 	
 	return
 }
@@ -154,7 +154,7 @@ func main() {
 func EndProgram() {
 	listener.Close()
 	running = false
-	goncurses.End()
+	gc.End()
 }
 
 func GetSelfPath() (string, error) {
@@ -236,38 +236,38 @@ func Haaaaalp() {
 	parser.WriteHelp(os.Stdout)
 }
 
-func PrintEmptyLinesOnWindow(win goncurses.Window, n int) {
+func PrintEmptyLinesOnWindow(win gc.Window, n int) {
 	for i := 0; i < n; i++ {
 		win.Println()
 	}
 }
 
-func PrintSpacesOnWindow(win goncurses.Window, n int) {
+func PrintSpacesOnWindow(win gc.Window, n int) {
 	for i := 0; i < n; i++ {
 		win.Print(" ")
 	}
 }
 
-func PrintCenteredOnWindow(win goncurses.Window, cols, lineLength int, line string) {
+func PrintCenteredOnWindow(win gc.Window, cols, lineLength int, line string) {
 	PrintSpacesOnWindow(win, (cols - lineLength) / 2)
 	win.Println(line)
 }
 
-func createWindow(h, w, y, x int) goncurses.Window {
-	new, _ := goncurses.NewWindow(h, w, y, x)
+func createWindow(h, w, y, x int) gc.Window {
+	new, _ := gc.NewWindow(h, w, y, x)
 	new.Refresh()
 	
-	return new
+	return *new
 }
 
 func SetupServingInformation() {
-	goncurses.Echo(false)
-	goncurses.CBreak(true)
-	goncurses.Cursor(0)
+	gc.Echo(false)
+	gc.CBreak(true)
+	gc.Cursor(0)
 	
     stdscr.Keypad(true)
 
-    rows, cols = stdscr.Maxyx()
+    rows, cols = stdscr.MaxYX()
 	
 	win = createWindow(rows, cols, 0, 0)
 	
