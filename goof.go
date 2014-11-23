@@ -43,9 +43,9 @@ var listener net.Listener
 var running bool
 var currentSpeed int64
 
-var stdscr gc.Window
+var stdscr *gc.Window
 
-var win gc.Window
+var win *gc.Window
 var rows, cols int
 
 var frame int
@@ -121,7 +121,7 @@ func main() {
 	wg.Add(1)
 	
 	// init ncurses and end it, if main returns
-    _, err = gc.Init()
+    stdscr, err = gc.Init()
 	
 	// handle ctrl+c
 	c := make(chan os.Signal, 1)
@@ -236,28 +236,34 @@ func Haaaaalp() {
 	parser.WriteHelp(os.Stdout)
 }
 
-func PrintEmptyLinesOnWindow(win gc.Window, n int) {
+func PrintEmptyLinesOnWindow(win *gc.Window, n int) {
 	for i := 0; i < n; i++ {
-		win.Println()
+		win.Print("\n")
 	}
 }
 
-func PrintSpacesOnWindow(win gc.Window, n int) {
+func PrintSpacesOnWindow(win *gc.Window, n int) {
 	for i := 0; i < n; i++ {
 		win.Print(" ")
 	}
 }
 
-func PrintCenteredOnWindow(win gc.Window, cols, lineLength int, line string) {
+func PrintCenteredOnWindow(win *gc.Window, cols, lineLength int, line string) {
 	PrintSpacesOnWindow(win, (cols - lineLength) / 2)
-	win.Println(line)
+	win.Print(line + "\n")
 }
 
-func createWindow(h, w, y, x int) gc.Window {
-	new, _ := gc.NewWindow(h, w, y, x)
-	new.Refresh()
+func createWindow(h, w, y, x int) *gc.Window {
+	newWin, err := gc.NewWindow(h, w, y, x)
+
+    if err != nil {
+        println(err.Error())
+    }
+
+    //win.Keypad(true)
+    //new.Refresh()
 	
-	return *new
+	return newWin
 }
 
 func SetupServingInformation() {
@@ -269,7 +275,7 @@ func SetupServingInformation() {
 
     rows, cols = stdscr.MaxYX()
 	
-	win = createWindow(rows, cols, 0, 0)
+	win = createWindow(rows - 10, cols - 10, 1, 1)
 	
 	frame = 0
 	framesCount = 2
@@ -310,6 +316,8 @@ func SetStartServingInformation() {
 	PrintCenteredOnWindow(win, cols, len(wgetString), wgetString)
 	
 	win.Refresh()
+
+    //println("test")
 }
 
 func UpdateServingInformation() {
